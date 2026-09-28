@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,700&display=swap" rel="stylesheet"><meta name="color-scheme" content="light"><title>For Alex — Écris avec clarté</title>
+<style>
+:root{--bg:#FBFDFF;--card:#fff;--ink:#0B2A4A;--mut:#4F6784;--acc:#0B73E0;--acc2:#E0F0FF;--or:#FF8A1F;--orb:#FFF0E0;--ort:#B85400;--ok:#12805C;--okb:#DDF5EA;--bad:#B3261E;--badb:#FCE4E2;--line:#D3E6F8;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}
+:root[data-theme="dark"]{--bg:#0B1B30;--card:#122740;--ink:#EAF4FF;--mut:#9DB7D3;--acc:#5BB0FF;--acc2:#183B60;--orb:#4A2B0C;--ort:#FFB566;--okb:#0F3327;--badb:#3C1A1A;--line:#22496F}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100%}
+h1,h2,h3,button,nav,.ui,label,textarea,input{font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif}
+h1{font-size:28px;margin:.2em 0}h2{font-size:20px;margin:.2em 0 .6em}h3{font-size:16px;margin:0 0 .3em}
+#app{max-width:760px;margin:0 auto;padding:16px 16px 96px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:0 0 14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.sp{justify-content:space-between}
+.chip{background:var(--orb);color:var(--ort);border-radius:999px;padding:6px 12px;font:600 14px system-ui}
+button{cursor:pointer;border:0;border-radius:12px;padding:12px 18px;font-size:15px;font-weight:600;background:var(--acc);color:#fff}
+button.g{background:var(--acc2);color:var(--acc)}button.o{background:var(--or);color:#fff}button:disabled{opacity:.4;cursor:default}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;background:var(--card);color:var(--ink);border:2px solid var(--line);font-weight:400;font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif}
+.opt.ok{border-color:var(--ok);background:var(--okb)}.opt.no{border-color:var(--bad);background:var(--badb)}
+textarea,input{width:100%;border:2px solid var(--line);border-radius:12px;padding:12px;background:var(--card);color:var(--ink);font-size:16px}
+textarea{min-height:150px;resize:vertical;font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;gap:2px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+nav button{background:none;color:var(--mut);padding:8px 10px;font-size:13px;flex:1;max-width:130px}nav button.on{color:var(--acc);background:var(--acc2)}
+.bar{height:10px;background:var(--acc2);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--or))}
+.mail{background:#fff;color:#0B2A4A;border:1px solid #BFE0FF;border-left:5px solid #FF8A1F;border-radius:8px;padding:16px;white-space:pre-wrap;box-shadow:3px 3px 0 #D9EBFF}
+.hl{background:#FFD9A8;color:#222;padding:0 3px;border-radius:3px}
+.mod{display:flex;gap:14px;align-items:center;cursor:pointer}.mod .n{width:44px;height:44px;border-radius:50%;background:var(--acc2);color:var(--acc);display:grid;place-items:center;font:700 18px system-ui;flex:none}
+.mod.done .n{background:var(--or);color:#fff}.mod.lock{opacity:.55;cursor:default}
+.ok-t{color:var(--ok)}.bad-t{color:var(--bad)}.mut{color:var(--mut);font-size:14px}
+.brand{font:italic 700 30px 'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--or)}
+.pop{animation:pop .3s}@keyframes pop{from{transform:scale(.96);opacity:.5}}@media(prefers-reduced-motion:reduce){.pop{animation:none}}
+</style></head><body><div id="app"></div>
+<nav id="nav" class="ui"></nav>
+<script>
+const KEY='plume-v1';
+const D={xp:0,streak:1,last:null,done:{},habits:{},badges:[],scores:[],on:false,name:''};
+let S;try{S=Object.assign({},D,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){S={...D}}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s),E=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+function touch(){const t=today();if(S.last!==t){const y=new Date(Date.now()-864e5).toISOString().slice(0,10);S.streak=S.last===y?S.streak+1:1;S.last=t;save()}}
+const LV=[[0,'Plume novice'],[300,'Plume naissante'],[900,'Plume assurée'],[2000,'Plume experte'],[4000,'Plume d\'or']];
+const lvl=()=>[...LV].reverse().find(l=>S.xp>=l[0])[1];
+const BADGES={objet:'Objet impeccable',concis:'Maître de la concision',ton:'Ton juste',client:'Client rassuré',or:'Plume d\'or'};
+function badge(k){if(!S.badges.includes(k)){S.badges.push(k);toast('🏅 Badge : '+BADGES[k])}}
+function xp(n){S.xp+=n;save()}
+function toast(t){const d=document.createElement('div');d.textContent=t;d.className='ui chip pop';d.style.cssText='position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:9;box-shadow:0 4px 14px #0003';document.body.append(d);setTimeout(()=>d.remove(),2600)}
+const HAB={vague:'Demandes trop vagues',hesit:'Ton trop hésitant',long:'Phrases trop longues',objet:'Objets imprécis',miss:'Informations manquantes',lourd:'Formulations lourdes',salut:'Registre mal adapté',clot:'Formule de fin / signature oubliée'};
+const bump=k=>{S.habits[k]=(S.habits[k]||0)+1;save()};
+
+// ---------- CONTENT ----------
+const MODS=[
+['Écrire professionnellement, ça veut dire quoi ?',[
+{t:'c',h:'salut',q:'Un client que vous ne connaissez pas encore. Quel message est adapté ?',o:['Salut, tu peux m\'envoyer ça vite ?','Bonjour Madame Roux,\nPourriez-vous me transmettre le contrat signé avant vendredi ?\nMerci d\'avance.','Madame, je me permets de solliciter de votre haute bienveillance la transmission dudit contrat.'],a:1,w:'La 1re est trop familière, la 3e trop cérémonieuse. Le professionnel courant est poli, direct et daté.'},
+{t:'c',h:'salut',q:'À un collègue avec qui vous travaillez chaque jour, « Veuillez agréer l\'expression de mes salutations distinguées » est…',o:['Trop formel','Parfaitement adapté','Trop familier'],a:0,w:'Le registre dépend de la relation : « Cordialement » ou « Bonne journée » suffisent.'},
+{t:'c',h:'salut',q:'Avant d\'écrire, quelle question est la plus utile ?',o:['Quelle formule de politesse utiliser ?','Qui lit, et qu\'est-ce que j\'attends de lui ?','Comment faire long et sérieux ?'],a:1,w:'Destinataire + action attendue guident tout le reste : ton, structure, longueur.'}]],
+['Structurer un message efficace',[
+{t:'c',h:'objet',q:'Quel objet est le meilleur ?',o:['Question','Urgent','Demande de rendez-vous — dossier Martin','Bonjour'],a:2,w:'Un bon objet dit le but et la référence : on comprend en 3 secondes.'},
+{t:'c',h:'objet',q:'Quel ordre est le plus efficace ?',o:['Objet → contexte → info essentielle → demande → échéance → conclusion','Longue histoire → excuses → demande cachée à la fin','Conclusion → salutation → objet'],a:0,w:'Le lecteur doit repérer la demande et l\'échéance sans chercher.'},
+{t:'w',h:'objet',q:'Réécrivez cet objet vague : « Petit problème ». Contexte : la commande n°4587 n\'est pas arrivée.',hint:'Nommez le sujet ET la référence.',chk:s=>/4587/.test(s)&&/commande|livraison/i.test(s)&&s.length>14,ok:'Objet précis : sujet + numéro. Exemple : « Retard de livraison — commande n°4587 ».'}]],
+['Être clair et concis',[
+{t:'c',h:'lourd',q:'Version la plus claire ?',o:['Nous procédons actuellement à l\'étude de votre demande en vue de sa prise en considération.','Nous examinons actuellement votre demande.','Votre demande fait l\'objet d\'une étude en cours.'],a:1,w:'Verbe concret (« examinons ») au lieu de nominalisations empilées.'},
+{t:'c',h:'lourd',q:'Comment alléger « Nous vous informons du fait que… » ?',o:['Nous vous informons que…','Nous portons à votre connaissance le fait que…','Il vous est notifié que…'],a:0,w:'« du fait que » n\'ajoute rien. Plus simple ne veut pas dire moins professionnel.'},
+{t:'w',h:'long',q:'Simplifiez : « Suite à la réception de votre courriel en date du 3 mars, nous sommes dans l\'obligation de vous informer que la mise en œuvre de la livraison sera effectuée avec un retard de deux jours. »',hint:'Un verbe concret, deux phrases courtes, l\'info clé tôt.',chk:s=>s.split(/\s+/).length<=28&&/retard|livrerons|livr/i.test(s)&&/deux jours|2 jours/i.test(s),ok:'Exemple : « Nous avons bien reçu votre message du 3 mars. Votre livraison aura deux jours de retard. »'}]],
+['Demander avec tact',[
+{t:'c',h:'vague',q:'Laquelle est courtoise ET précise ?',o:['Pourriez-vous me transmettre le devis avant jeudi afin que nous finalisions la commande ?','Je voulais savoir si éventuellement vous pourriez peut-être m\'envoyer le devis.','Envoyez le devis.'],a:0,w:'Demande + contexte + échéance. Poli sans affaiblir la demande.'},
+{t:'c',h:'lourd',q:'« Je vous saurais gré de… » est aujourd\'hui plutôt…',o:['Naturel à l\'oral','Très cérémonieux, à réserver à de rares cas','Familier'],a:1,w:'La formule la plus élaborée n\'est pas la meilleure : « Pourriez-vous… ? » fait mieux.'},
+{t:'w',h:'vague',q:'Rendez cette demande précise : « Vous pourriez m\'envoyer les documents quand vous pouvez ? » (Contexte : dossier d\'inscription, il faut les documents avant le 15.)',hint:'Ajoutez une échéance datée.',chk:s=>/15/.test(s)&&/pourri|merci de|pouvez-vous/i.test(s),ok:'Exemple : « Pourriez-vous m\'envoyer les documents du dossier d\'inscription avant le 15 ? Merci d\'avance. »'}]],
+['Écrire à un client',[]],['Annoncer un problème',[]],['Écrire à l\'administration',[]],['Relancer, réclamer, négocier',[]],['Réviser comme un pro',[]],['Missions professionnelles',[]]];
+
+const MISSION={from:'Claire Martin',subj:'Commande n°4587',body:'Bonjour,\n\nNotre commande devait être livrée lundi et nous n\'avons toujours rien reçu.\n\nPouvez-vous nous indiquer quand elle sera livrée ?\n\nMerci,\n\nClaire Martin',
+facts:'Le transporteur a eu une panne : livraison possible jeudi avant 17 h. Vous vous appelez à votre nom, chargé(e) de clientèle.',
+expert:'Objet : Retard de livraison — commande n°4587\n\nBonjour Madame Martin,\n\nMerci pour votre message, et toutes nos excuses pour ce retard. Une panne chez notre transporteur a décalé l\'expédition.\n\nVotre commande sera livrée jeudi avant 17 h. Je vous envoie le numéro de suivi dès aujourd\'hui.\n\nJe reste à votre disposition si besoin.\n\nCordialement,\nJulie Roux'};
+
+// ---------- FEEDBACK (rule-based; swap analyse() for an AI API call later) ----------
+async function analyse(subj,body){
+ const t=subj+'\n'+body,sents=body.split(/[.!?]\s|\n/).filter(x=>x.trim()),I=[];
+ const add=(k,w,txt,quote,why,hint)=>I.push({k,w,txt,quote,why,hint});
+ const wc=body.split(/\s+/).filter(Boolean).length;
+ if(!/^\s*(bonjour|madame|monsieur|chère|cher)/im.test(body))add('salut',6,'Il manque une salutation.','','Un message sans salutation semble abrupt.','Commencez par « Bonjour Madame Martin, ».');
+ if(subj.trim().length<12||/^(bonjour|question|urgent|demande|petit)/i.test(subj.trim())||!/4587/.test(subj))add('objet',10,'Votre objet est trop vague.',subj,'Le lecteur doit comprendre le but en quelques secondes.','Ajoutez le sujet et le numéro de commande.');
+ const h=body.match(/[^.!?\n]*(éventuellement|peut-être|un peu|je voulais savoir|j'aimerais savoir)[^.!?\n]*/i);
+ if(h)add('hesit',9,'Votre formulation est trop hésitante.',h[0].trim(),'Une phrase peut être polie tout en restant directe.','Remplacez par une affirmation claire.');
+ if(!/désol|excus|regrett/i.test(body))add('clot',8,'Vous ne reconnaissez pas le désagrément.','','Le client attend qu\'on prenne acte du retard avant l\'explication.','Une excuse courte suffit, sans justification excessive.');
+ if(!/jeudi|17 ?h/i.test(body))add('miss',12,'L\'information essentielle manque : quand sera-t-elle livrée ?','','Claire a posé une question précise : répondez-y en premier.','Donnez le jour et l\'horaire dans un paragraphe court.');
+ if(/indépendant de notre volonté|nous ne saurions être tenus|du fait que/i.test(body))add('lourd',7,'Cette formulation est défensive ou lourde.',(body.match(/indépendant de notre volonté|nous ne saurions être tenus|du fait que/i)||[''])[0],'Elle éloigne du sujet et sonne comme une excuse.','Dites simplement ce qui s\'est passé.');
+ const long=sents.find(s=>s.split(/\s+/).length>28);
+ if(long)add('long',6,'Cette phrase est trop longue.',long.trim(),'Elle retarde l\'information importante.','Coupez-la en deux.');
+ if(!/(cordialement|bien à vous|bonne journée|à votre disposition)/i.test(body)||body.trim().split('\n').length<3)add('clot',5,'La fin du message est incomplète (formule ou signature).','','Une conclusion et une signature complètent le message.','Ajoutez une formule de fin et votre nom.');
+ if(wc<25)add('miss',8,'Le message est trop court pour être utile.','','Il manque l\'explication et la suite.','Expliquez brièvement, puis donnez la prochaine étape.');
+ const has=k=>!I.some(i=>i.k===k),cl=I.reduce((a,i)=>a+(['miss','long','lourd'].includes(i.k)?i.w:0),0);
+ const sc={Clarté:20-Math.min(12,Math.round(cl*.6)),Structure:20-(has('salut')?0:4)-(has('clot')?0:5)-(has('objet')?0:5),Ton:20-(has('hesit')?0:6)-(has('clot')?0:3)-(has('lourd')?0:4),Précision:20-(has('miss')?0:9)-(has('objet')?0:4),Langue:20-Math.min(6,Math.round(I.length*.8))};
+ Object.keys(sc).forEach(k=>sc[k]=Math.max(4,sc[k]));
+ const total=Object.values(sc).reduce((a,b)=>a+b,0);
+ return {sc,total,top:I.sort((a,b)=>b.w-a.w).slice(0,3)};
+}
+const stars=n=>'★'.repeat(Math.round(n/4))+'☆'.repeat(5-Math.round(n/4));
+const label=n=>n>=90?'Excellent message 🌟':n>=80?'Très bon message ✨':n>=65?'Bon message, à peaufiner':'Bonne base, on retravaille';
+
+// ---------- VIEWS ----------
+let view='home',ctx={};
+const go=(v,c={})=>{view=v;ctx=c;render();scrollTo(0,0)};
+function render(){
+ if(!S.on)return onboard();
+ const nav=[['home','Accueil'],['path','Parcours'],['train','S\'entraîner'],['review','À revoir'],['prog','Mes progrès']];
+ $('#nav').innerHTML=nav.map(n=>`<button class="${view===n[0]||(view==='ex'&&n[0]==='path')?'on':''}" onclick="go('${n[0]}')">${n[1]}</button>`).join('');
+ $('#nav').style.display='flex';
+ ({home,path,ex,train,review,prog,inbox,result})[view]();
+}
+function onboard(){$('#nav').style.display='none';$('#app').innerHTML=`<div class="card" style="margin-top:8vh"><div class="brand">For Alex ✒️</div><h1>Écris avec clarté. Écris comme un pro.</h1><p>Vous parlez déjà français. Ici, vous apprenez à l\'écrire mieux : e-mails à un client, courriers à l\'administration, relances, réclamations.</p><label class="mut" for="nm">Comment vous appelez-vous ?</label><input id="nm" autocomplete="given-name" placeholder="Votre prénom"><p></p><button onclick="S.on=true;S.name=E($('#nm').value.trim());save();touch();go('home')">Commencer</button></div>`}
+function home(){touch();const hs=Object.entries(S.habits).sort((a,b)=>b[1]-a[1]);const next=MODS.findIndex((m,i)=>m[1].length&&!S.done[i]);
+ $('#app').innerHTML=`<h1>Bonjour${S.name?' '+S.name:''} 👋</h1><p class="mut" style="margin-top:0">On améliore votre plume ?</p>
+ <div class="row ui" style="margin-bottom:14px"><span class="chip">🔥 Série : ${S.streak} jour${S.streak>1?'s':''}</span><span class="chip">⭐ ${S.xp.toLocaleString('fr-FR')} XP</span><span class="chip">✒️ ${lvl()}</span></div>
+ <div class="card"><h2>${next>=0?'Module '+(next+1)+' — '+MODS[next][0]:'Missions professionnelles'}</h2><button class="o" onclick="${next>=0?`go('ex',{m:${next},i:0})`:`go('train')`}">Continuer</button></div>
+ <div class="card"><h3>Défi du jour</h3><p>Répondez à Claire : sa commande n\'est pas arrivée. Soyez clair, courtois et précis.</p><button class="g" onclick="go('inbox')">Relever le défi</button></div>
+ <div class="card"><h3>À revoir</h3><p>${hs.length?hs.length+' habitude'+(hs.length>1?'s':'')+' à retravailler':'Rien pour l\'instant : vos habitudes apparaîtront après vos premiers exercices.'}</p>${hs.length?'<button class="g" onclick="go(\'review\')">Réviser</button>':''}</div>`}
+function path(){$('#app').innerHTML='<h1>Parcours</h1><p class="mut">10 modules. Les modules 1 à 4 sont jouables dans ce prototype ; la mission de synthèse est dans « S\'entraîner ».</p>'+MODS.map((m,i)=>{const ok=m[1].length;return `<div class="card mod ${S.done[i]?'done':''} ${ok?'':'lock'}" ${ok?`onclick="go('ex',{m:${i},i:0})"`:''}><div class="n">${S.done[i]?'✓':i+1}</div><div><h3>${m[0]}</h3><span class="mut">${ok?m[1].length+' exercices':'Bientôt disponible'}</span></div></div>`}).join('')}
+function ex(){const {m,i,ans,fb}=ctx,M=MODS[m],e=M[1][i];
+ if(!e){S.done[m]=1;xp(40);if(m===1)badge('objet');if(m===2)badge('concis');if(m===3)badge('ton');save();$('#app').innerHTML=`<div class="card pop"><h1>Module terminé 🎉</h1><p>+40 XP. Bravo !</p><button onclick="go('path')">Retour au parcours</button></div>`;return}
+ const bar=`<div class="bar" style="margin:8px 0 16px"><i style="width:${i/M[1].length*100}%"></i></div>`;
+ let h=`<div class="mut ui">${M[0]} · ${i+1}/${M[1].length}</div>${bar}<div class="card"><h2 style="white-space:pre-wrap">${E(e.q)}</h2>`;
+ if(e.t==='c'){h+=e.o.map((o,k)=>`<button class="opt ${ans!=null?(k===e.a?'ok':k===ans?'no':''):''}" ${ans!=null?'disabled':''} onclick="pick(${k})" style="white-space:pre-wrap">${E(o)}</button>`).join('');
+  if(ans!=null)h+=`<p class="${ans===e.a?'ok-t':'bad-t'} ui"><b>${ans===e.a?'Juste !':'Pas tout à fait.'}</b> <span style="color:var(--ink);font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif">${E(e.w)}</span></p><button onclick="go('ex',{m:${m},i:${i+1}})">Suivant</button>`}
+ else{h+=`<textarea id="wa" aria-label="Votre réponse" ${fb?'disabled':''}>${E(ctx.txt||'')}</textarea><p class="mut">💡 Indice : ${E(e.hint)}</p>`;
+  if(!fb)h+=`<button onclick="sub()">Valider</button>`;else h+=`<p class="${fb==='ok'?'ok-t':'bad-t'} ui"><b>${fb==='ok'?'Bien joué !':'Presque.'}</b> <span style="color:var(--ink);font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif">${E(e.ok)}</span></p><button onclick="go('ex',{m:${m},i:${i+1}})">Suivant</button>`}
+ $('#app').innerHTML=h+'</div>'}
+function pick(k){const e=MODS[ctx.m][1][ctx.i];ctx.ans=k;if(k===e.a)xp(10);else bump(e.h);ex()}
+function sub(){const e=MODS[ctx.m][1][ctx.i],s=$('#wa').value.trim();ctx.txt=s;const ok=e.chk(s);ctx.fb=ok?'ok':'no';if(ok)xp(20);else bump(e.h);ex()}
+function train(){$('#app').innerHTML=`<h1>S\'entraîner</h1><div class="card"><h3>Mission — Client</h3><p>Une cliente attend sa commande. Vous êtes responsable du dossier.</p><button onclick="go('inbox')">Ouvrir la boîte de réception</button></div><div class="card"><h3>Missions 2 à 5</h3><p class="mut">Administration, problème, réclamation, relance : à venir. Le moteur de feedback est déjà prêt à les accueillir.</p></div>`}
+function inbox(){const m=MISSION;$('#app').innerHTML=`<h1>Boîte de réception</h1><div class="mut ui">De : ${m.from}</div><div class="mail" style="margin:8px 0">Objet : ${m.subj}\n\n${m.body}</div><div class="card"><h3>Vous êtes responsable du dossier. Répondez à Claire.</h3><p class="mut" id="hint" hidden>💡 ${m.facts}</p>
+ <label class="mut" for="to">À :</label><input id="to" value="claire.martin@exemple.fr" readonly><p></p><label class="mut" for="sj">Objet :</label><input id="sj" value="Re: Commande n°4587"><p></p><label class="mut" for="bd">Message</label><textarea id="bd" placeholder="Bonjour…&#10;&#10;Cordialement,&#10;Votre nom" style="min-height:220px"></textarea>
+ <div class="row" style="margin-top:12px"><button class="g" onclick="$('#hint').hidden=false">Indice</button><button class="g" onclick="relire()">Relire</button><button class="o" onclick="envoyer()">Envoyer</button></div><p class="mut" id="rl"></p><p class="mut">« Envoyer » soumet l\'exercice ; aucun e-mail réel n\'est envoyé.</p></div>`}
+function relire(){const b=$('#bd').value,w=b.split(/\s+/).filter(Boolean).length;$('#rl').textContent=`${w} mots · ${b.split(/[.!?]\s/).length} phrases · ${/bonjour|madame/i.test(b)?'salutation ✓':'salutation manquante'} · ${/cordialement|bonne journée|disposition/i.test(b)?'conclusion ✓':'conclusion manquante'}`}
+async function envoyer(){const b=$('#bd').value.trim();if(b.length<10){$('#rl').textContent='Écrivez votre message avant d\'envoyer.';return}
+ const r=await analyse($('#sj').value,b);r.top.forEach(i=>bump(i.k));S.scores.push({d:today(),s:r.total});xp(Math.round(r.total/2));if(r.total>=90)badge('or');if(r.total>=75)badge('client');save();go('result',{r,i:0,b})}
+function result(){const {r,i,b,shown}=ctx,t=r.top[i];
+ let h=`<div class="card pop"><h1>${r.total}/100 — ${label(r.total)}</h1>${Object.entries(r.sc).map(([k,v])=>`<div class="row sp ui"><span>${k}</span><span style="color:var(--acc)" aria-label="${Math.round(v/4)} sur 5">${stars(v)}</span></div>`).join('')}</div>`;
+ if(!t)h+=`<div class="card"><h3>Rien de majeur à corriger 👏</h3></div>`;
+ else h+=`<div class="card"><p class="ui mut">Priorité ${i+1} sur ${r.top.length}</p><h3>${E(t.txt)}</h3>${t.quote?`<p>« <span class="hl">${E(t.quote)}</span> »</p>`:''}<p><b class="ui">Pourquoi ?</b> ${E(t.why)}</p><p class="mut">💡 ${E(t.hint)}</p><label class="ui" for="rf"><b>Je reformule</b></label><textarea id="rf" style="min-height:90px" oninput="$('#nx').disabled=this.value.trim().length<12"></textarea><p></p><button id="nx" disabled onclick="ctx.i++;ctx.shown=ctx.i>=ctx.r.top.length;xp(15);render()">${i+1<r.top.length?'Priorité suivante':'Voir la version experte'}</button></div>`;
+ if(shown||!t)h+=`<div class="card"><h3>Version experte</h3><div class="mail">${E(MISSION.expert)}</div><p class="mut">Comparez avec la vôtre : ce n\'est pas un modèle à recopier, mais une façon de placer l\'information utile en premier.</p><button onclick="go('home')">Terminer</button></div>`;
+ $('#app').innerHTML=h}
+function review(){const hs=Object.entries(S.habits).sort((a,b)=>b[1]-a[1]);
+ $('#app').innerHTML='<h1>À revoir</h1>'+(hs.length?`<div class="card"><h3>À travailler cette semaine</h3>${hs.slice(0,4).map(([k,n])=>`<div class="row sp ui" style="padding:6px 0"><span>${HAB[k]}</span><span class="chip">${n}×</span></div>`).join('')}</div><div class="card"><h3>Exercice ciblé</h3><p>Les modules correspondants se rejouent depuis le Parcours ; chaque erreur alimente cette liste.</p><button onclick="go('path')">Ouvrir le parcours</button></div>`:'<div class="card"><p>Aucune habitude repérée. Faites un exercice pour commencer.</p><button onclick="go(\'path\')">Aller au parcours</button></div>')}
+function prog(){const sc=S.scores.slice(-5),avg=sc.length?Math.round(sc.reduce((a,b)=>a+b.s,0)/sc.length):0;
+ const m=(l,v)=>`<div class="ui" style="margin:8px 0"><div class="row sp"><span>${l}</span><span>${v}%</span></div><div class="bar"><i style="width:${v}%"></i></div></div>`;
+ const hb=k=>Math.max(30,100-(S.habits[k]||0)*12);
+ $('#app').innerHTML=`<h1>Mes progrès</h1><div class="card"><h3>Score d\'écriture (5 derniers)</h3><p style="font-size:34px;margin:0" class="ui">${sc.length?avg+'/100':'—'}</p></div><div class="card"><h3>Mes habitudes d\'écriture</h3>${m('Clarté',hb('lourd'))}${m('Ton',hb('hesit'))}${m('Concision',hb('long'))}${m('Précision',hb('miss'))}${m('Objets',hb('objet'))}</div><div class="card"><h3>Badges</h3><div class="row">${Object.entries(BADGES).map(([k,v])=>`<span class="chip" style="${S.badges.includes(k)?'':'opacity:.35'}">🏅 ${v}</span>`).join('')}</div></div><button class="g" onclick="if(confirm('Effacer toute la progression ?')){localStorage.removeItem(KEY);location.reload()}">Réinitialiser</button>`}
+render();
+</script></body></html>
